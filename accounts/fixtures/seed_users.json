@@ -1,0 +1,46 @@
+[
+  {
+    "model": "accounts.customuser",
+    "pk": 1,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$I9Br8rAVU86hTZre34fP5T$n5W6XPM9pUWzzARibqzbhWbQNofoLJBmIvDGP43FE58=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "officer_alex",
+      "first_name": "",
+      "last_name": "",
+      "email": "officer@university.edu",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2026-11-16T08:00:00Z",
+      "full_name": "Alex Rivera (Student Council VP)",
+      "role": "OFFICER",
+      "contact_number": "+63 917 111 2222",
+      "profile_photo": "",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "accounts.customuser",
+    "pk": 2,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$I9Br8rAVU86hTZre34fP5T$n5W6XPM9pUWzzARibqzbhWbQNofoLJBmIvDGP43FE58=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "member_taylor",
+      "first_name": "",
+      "last_name": "",
+      "email": "member@university.edu",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-11-16T08:00:00Z",
+      "full_name": "Taylor Santos (Active Member)",
+      "role": "MEMBER",
+      "contact_number": "+63 918 333 4444",
+      "profile_photo": "",
+      "groups": [],
+      "user_permissions": []
+    }
+  }
+]
