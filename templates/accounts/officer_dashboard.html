@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}Officer Dashboard{% endblock %}
+
+{% block content %}
+<!-- Dashboard Header -->
+<div class="dashboard-header">
+  <div>
+    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.35rem;">
+      <h1 class="dashboard-title">Officer Management Dashboard</h1>
+      <span class="badge badge-officer">Officer Access</span>
+    </div>
+    <p class="dashboard-subtitle">
+      Welcome back, <strong>{{ user.display_name }}</strong>. Manage organization events, live roll-call attendance, and administrative exports.
+    </p>
+  </div>
+  <div style="display: flex; gap: 0.75rem;">
+    <a href="{% url 'events:create_event' %}" class="btn btn-primary">
+      <svg style="width: 18px; height: 18px; fill: currentColor;" viewBox="0 0 24 24">
+        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+      </svg>
+      Create Event
+    </a>
+  </div>
+</div>
+
+<!-- Quick Actions Navigation Bar -->
+<div class="quick-actions-bar">
+  <a href="{% url 'events:create_event' %}" class="btn btn-secondary btn-sm">
+    <svg style="width: 16px; height: 16px; fill: currentColor;" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+    Create Event
+  </a>
+  <a href="{% url 'events:attendance_tracker' %}" class="btn btn-secondary btn-sm">
+    <svg style="width: 16px; height: 16px; fill: currentColor;" viewBox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
+    Track Attendance
+  </a>
+  <a href="{% url 'events:export_reports' %}" class="btn btn-secondary btn-sm">
+    <svg style="width: 16px; height: 16px; fill: currentColor;" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+    Export Reports
+  </a>
+  <a href="{% url 'accounts:profile' %}" class="btn btn-secondary btn-sm">
+    <svg style="width: 16px; height: 16px; fill: currentColor;" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+    Update My Profile
+  </a>
+</div>
+
+<!-- High-Level Metric Cards -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <span class="stat-value">{{ stats.total_events }}</span>
+    <span class="stat-label">Total Events Organized</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-value">{{ stats.upcoming_events }}</span>
+    <span class="stat-label">Active / Upcoming Events</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-value">{{ stats.total_attendees }}</span>
+    <span class="stat-label">Total Recorded Attendees</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-value">{{ stats.pending_rsvps }}</span>
+    <span class="stat-label">Confirmed RSVPs</span>
+  </div>
+</div>
+
+<!-- Managed Organization Events Table -->
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">Managed Events &amp; Attendance Records</h2>
+    <span class="badge badge-info">Phase 1 Preview</span>
+  </div>
+
+  <div class="card-body" style="padding: 0;">
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Event Title</th>
+            <th>Scheduled Date</th>
+            <th>Venue / Location</th>
+            <th>RSVP Count</th>
+            <th>Status</th>
+            <th style="text-align: right;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ev in sample_events %}
+            <tr>
+              <td>
+                <strong>{{ ev.title }}</strong>
+              </td>
+              <td>{{ ev.date }}</td>
+              <td>{{ ev.location }}</td>
+              <td>
+                <span class="badge badge-info">{{ ev.rsvp_count }} RSVPs</span>
+              </td>
+              <td>
+                {% if ev.status == 'Upcoming' %}
+                  <span class="badge badge-success">Upcoming</span>
+                {% else %}
+                  <span class="badge" style="background-color: #f1f5f9; color: #64748b;">Completed</span>
+                {% endif %}
+              </td>
+              <td style="text-align: right;">
+                <a href="{% url 'events:attendance_tracker' %}" class="btn btn-outline btn-sm">Attendance</a>
+                <a href="{% url 'events:export_reports' %}" class="btn btn-outline btn-sm">Report</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card-footer" style="display: flex; justify-content: space-between; align-items: center;">
+    <span style="font-size: 0.85rem; color: var(--text-muted);">
+      Showing events created by organization officers. Full CRUD and QR scanning scheduled for Phase 2.
+    </span>
+    <a href="{% url 'events:create_event' %}" class="btn btn-primary btn-sm">New Event &rarr;</a>
+  </div>
+</div>
+{% endblock %}

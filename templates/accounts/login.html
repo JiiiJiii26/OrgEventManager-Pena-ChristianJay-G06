@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign In{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Sign In to OrgEventManager</h2>
+      <svg style="width: 22px; height: 22px; fill: var(--primary);" viewBox="0 0 24 24">
+        <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+      </svg>
+    </div>
+
+    <div class="card-body">
+      <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem;">
+        Enter your registered <strong>username or email address</strong> and password to access your role dashboard.
+      </p>
+
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger" style="margin-bottom: 1.25rem;">
+          <div>
+            {% for error in form.non_field_errors %}
+              <div>{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+      <form method="POST" novalidate>
+        {% csrf_token %}
+
+        {% if request.GET.next %}
+          <input type="hidden" name="next" value="{{ request.GET.next }}">
+        {% endif %}
+
+        <!-- Username or Email -->
+        <div class="form-group">
+          <label for="{{ form.username_or_email.id_for_label }}" class="form-label">
+            Username or Email Address
+          </label>
+          {{ form.username_or_email }}
+          {% if form.username_or_email.errors %}
+            {% for error in form.username_or_email.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          {% endif %}
+        </div>
+
+        <!-- Password -->
+        <div class="form-group">
+          <label for="{{ form.password.id_for_label }}" class="form-label">
+            Password
+          </label>
+          {{ form.password }}
+          {% if form.password.errors %}
+            {% for error in form.password.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          {% endif %}
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block" style="margin-top: 1.5rem;">
+          Sign In
+        </button>
+      </form>
+
+      <!-- Test Accounts Helper Box -->
+      <div style="margin-top: 1.75rem; padding: 1rem; background-color: #f8fafc; border-radius: var(--radius-sm); border: 1px dashed var(--border-color); font-size: 0.85rem;">
+        <strong style="color: #334155;">Quick Test Credentials (from Seed Data):</strong>
+        <div style="margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.25rem; color: var(--text-muted);">
+          <div><span class="badge badge-officer" style="font-size: 0.7rem;">Officer</span> <code>officer_alex</code> (or <code>officer@university.edu</code>) / <code>Password123!</code></div>
+          <div><span class="badge badge-member" style="font-size: 0.7rem;">Member</span> <code>member_taylor</code> (or <code>member@university.edu</code>) / <code>Password123!</code></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-footer" style="text-align: center;">
+      <span style="font-size: 0.9rem; color: var(--text-muted);">
+        Don't have an account yet? <a href="{% url 'accounts:register' %}" style="color: var(--primary); font-weight: 600;">Create one here</a>
+      </span>
+    </div>
+  </div>
+</div>
+{% endblock %}

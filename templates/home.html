@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Welcome to OrgEventManager{% endblock %}
+
+{% block content %}
+<div style="max-width: 900px; margin: 3rem auto; text-align: center;">
+  <div style="display: inline-block; padding: 0.5rem 1rem; background: var(--primary-light); color: var(--primary); border-radius: 9999px; font-weight: 700; font-size: 0.85rem; margin-bottom: 1.5rem;">
+    Student Organization Event & Attendance Management System
+  </div>
+  <h1 style="font-size: 2.75rem; font-weight: 800; line-height: 1.2; margin-bottom: 1.25rem; color: #0f172a;">
+    Streamline Your Student Organization Events &amp; Attendance
+  </h1>
+  <p style="font-size: 1.15rem; color: var(--text-muted); max-width: 680px; margin: 0 auto 2.5rem; line-height: 1.7;">
+    A unified platform for student leaders and active members. Officers organize events, track live roll-calls, and export analytics. Members browse campus activities, RSVP in seconds, and track their participation.
+  </p>
+
+  <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 3.5rem;">
+    <a href="{% url 'accounts:register' %}" class="btn btn-primary" style="padding: 0.85rem 1.75rem; font-size: 1.05rem;">
+      Create Account
+    </a>
+    <a href="{% url 'accounts:login' %}" class="btn btn-secondary" style="padding: 0.85rem 1.75rem; font-size: 1.05rem;">
+      Sign In
+    </a>
+  </div>
+
+  <!-- Role Cards -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; text-align: left;">
+    <div class="card" style="padding: 1.75rem;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+        <span class="badge badge-officer">Officer Role</span>
+        <svg style="width: 24px; height: 24px; fill: var(--officer-badge-text);" viewBox="0 0 24 24">
+          <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>
+        </svg>
+      </div>
+      <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem; font-weight: 700;">Event &amp; Attendance Administrators</h3>
+      <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;">
+        Create organization events, manage RSVP lists, conduct real-time attendance tracking via automated rosters, and export reports for university compliance.
+      </p>
+    </div>
+
+    <div class="card" style="padding: 1.75rem;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+        <span class="badge badge-member">Member Role</span>
+        <svg style="width: 24px; height: 24px; fill: var(--member-badge-text);" viewBox="0 0 24 24">
+          <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+        </svg>
+      </div>
+      <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem; font-weight: 700;">General Student Members</h3>
+      <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;">
+        Discover upcoming assemblies, technical workshops, and social gatherings. RSVP with one click, view your attendance status, and manage your student profile.
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

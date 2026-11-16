@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+  <div>
+    <h1 class="dashboard-title">Account Profile</h1>
+    <p class="dashboard-subtitle">Manage your personal information, contact details, and organization avatar.</p>
+  </div>
+  <div>
+    {% if user.is_officer %}
+      <a href="{% url 'accounts:officer_dashboard' %}" class="btn btn-secondary btn-sm">&larr; Back to Officer Dashboard</a>
+    {% else %}
+      <a href="{% url 'accounts:member_dashboard' %}" class="btn btn-secondary btn-sm">&larr; Back to Member Dashboard</a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="profile-grid">
+  <!-- Left Column: User Summary Card -->
+  <div class="card profile-card-center">
+    {% if user.profile_photo %}
+      <img src="{{ user.profile_photo.url }}" alt="{{ user.display_name }}" class="profile-avatar-large">
+    {% else %}
+      <div class="profile-avatar-placeholder-large">
+        {{ user.display_name|slice:":1"|upper }}
+      </div>
+    {% endif %}
+
+    <h2 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 0.25rem;">{{ user.display_name }}</h2>
+    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.85rem;">@{{ user.username }}</p>
+
+    <!-- Role Badge -->
+    <div>
+      {% if user.is_officer %}
+        <span class="badge badge-officer" style="padding: 0.35rem 0.85rem; font-size: 0.8rem;">
+          Officer (Administrator)
+        </span>
+      {% else %}
+        <span class="badge badge-member" style="padding: 0.35rem 0.85rem; font-size: 0.8rem;">
+          Member (Student)
+        </span>
+      {% endif %}
+    </div>
+
+    <!-- Metadata Details -->
+    <ul class="profile-meta-list">
+      <li class="profile-meta-item">
+        <span>Email:</span>
+        <span>{{ user.email }}</span>
+      </li>
+      <li class="profile-meta-item">
+        <span>Contact:</span>
+        <span>{{ user.contact_number|default:"Not specified" }}</span>
+      </li>
+      <li class="profile-meta-item">
+        <span>Account Status:</span>
+        <span style="color: #166534; font-weight: 700;">Active</span>
+      </li>
+      <li class="profile-meta-item">
+        <span>Member Since:</span>
+        <span>{{ user.date_joined|date:"M d, Y" }}</span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Right Column: Profile Edit Form -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Update Profile Information</h2>
+      <span class="badge badge-info">Self-Service</span>
+    </div>
+
+    <div class="card-body">
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger" style="margin-bottom: 1.25rem;">
+          <div>
+            {% for error in form.non_field_errors %}
+              <div>{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+      <!-- IMPORTANT: enctype="multipart/form-data" for profile photo upload -->
+      <form method="POST" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+
+        <!-- Username (Read-Only) -->
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input type="text" class="form-control" value="{{ user.username }}" disabled style="background-color: #f1f5f9; cursor: not-allowed;">
+          <div class="form-text">Usernames are permanent organization identifiers and cannot be altered.</div>
+        </div>
+
+        <!-- Role (Read-Only) -->
+        <div class="form-group">
+          <label class="form-label">Assigned Role</label>
+          <input type="text" class="form-control" value="{{ user.get_role_display }}" disabled style="background-color: #f1f5f9; cursor: not-allowed;">
+          <div class="form-text">Role promotions/demotions are managed by organization administrators.</div>
+        </div>
+
+        <!-- Full Name -->
+        <div class="form-group">
+          <label for="{{ form.full_name.id_for_label }}" class="form-label">
+            Full Name <span style="color: #b91c1c;">*</span>
+          </label>
+          {{ form.full_name }}
+          {% if form.full_name.errors %}
+            {% for error in form.full_name.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          {% endif %}
+        </div>
+
+        <!-- Email Address -->
+        <div class="form-group">
+          <label for="{{ form.email.id_for_label }}" class="form-label">
+            Email Address <span style="color: #b91c1c;">*</span>
+          </label>
+          {{ form.email }}
+          {% if form.email.errors %}
+            {% for error in form.email.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          {% endif %}
+        </div>
+
+        <!-- Contact Number -->
+        <div class="form-group">
+          <label for="{{ form.contact_number.id_for_label }}" class="form-label">
+            Contact Number
+          </label>
+          {{ form.contact_number }}
+          {% if form.contact_number.errors %}
+            {% for error in form.contact_number.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          {% endif %}
+        </div>
+
+        <!-- Profile Photo -->
+        <div class="form-group">
+          <label for="{{ form.profile_photo.id_for_label }}" class="form-label">
+            Profile Photo
+          </label>
+          {{ form.profile_photo }}
+          <div class="form-text">Upload a JPG, PNG, or WebP avatar image (managed via Pillow).</div>
+          {% if form.profile_photo.errors %}
+            {% for error in form.profile_photo.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          {% endif %}
+        </div>
+
+        <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+          <button type="submit" class="btn btn-primary">
+            Save Profile Changes
+          </button>
+          <a href="{% url 'accounts:profile' %}" class="btn btn-secondary">
+            Cancel
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

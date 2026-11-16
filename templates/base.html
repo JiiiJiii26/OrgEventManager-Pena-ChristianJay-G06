@@ -1,0 +1,99 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}OrgEventManager{% endblock %} | Student Org Manager</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="navbar">
+    <div class="nav-container">
+      <a href="{% url 'accounts:home' %}" class="nav-brand">
+        <svg viewBox="0 0 24 24">
+          <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zm-7 5h5v5h-5z"/>
+        </svg>
+        <span>OrgEventManager</span>
+      </a>
+
+      <nav>
+        <ul class="nav-links">
+          {% if user.is_authenticated %}
+            {% if user.is_officer %}
+              <!-- Officer Specific Navigation -->
+              <li><a href="{% url 'accounts:officer_dashboard' %}" class="nav-link {% if active_tab == 'officer_dashboard' %}active{% endif %}">Dashboard</a></li>
+              <li><a href="{% url 'events:create_event' %}" class="nav-link">Create Event</a></li>
+              <li><a href="{% url 'events:attendance_tracker' %}" class="nav-link">Attendance</a></li>
+              <li><a href="{% url 'events:export_reports' %}" class="nav-link">Reports</a></li>
+            {% else %}
+              <!-- Member Specific Navigation -->
+              <li><a href="{% url 'accounts:member_dashboard' %}" class="nav-link {% if active_tab == 'member_dashboard' %}active{% endif %}">Dashboard</a></li>
+              <li><a href="{% url 'events:upcoming_events' %}" class="nav-link">Upcoming Events</a></li>
+              <li><a href="{% url 'events:my_rsvps' %}" class="nav-link">My RSVPs</a></li>
+            {% endif %}
+          {% else %}
+            <li><a href="{% url 'accounts:home' %}" class="nav-link">Home</a></li>
+            <li><a href="{% url 'accounts:login' %}" class="nav-link">Login</a></li>
+            <li><a href="{% url 'accounts:register' %}" class="btn btn-primary btn-sm">Register</a></li>
+          {% endif %}
+        </ul>
+      </nav>
+
+      {% if user.is_authenticated %}
+        <div class="nav-user">
+          <a href="{% url 'accounts:profile' %}" style="text-decoration: none; display: flex; align-items: center; gap: 0.6rem;">
+            {% if user.profile_photo %}
+              <img src="{{ user.profile_photo.url }}" alt="{{ user.display_name }}" class="nav-avatar">
+            {% else %}
+              <div class="nav-avatar-placeholder">
+                {{ user.display_name|slice:":1"|upper }}
+              </div>
+            {% endif %}
+            <span style="font-weight: 600; font-size: 0.9rem; color: var(--text-main);">{{ user.display_name }}</span>
+          </a>
+
+          <!-- Role Badge -->
+          {% if user.is_officer %}
+            <span class="badge badge-officer">Officer</span>
+          {% else %}
+            <span class="badge badge-member">Member</span>
+          {% endif %}
+
+          <a href="{% url 'accounts:logout' %}" class="btn btn-outline btn-sm" title="Log out of your account">Logout</a>
+        </div>
+      {% endif %}
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="main-wrapper">
+    <!-- Messages & Alerts Framework -->
+    {% if messages %}
+      <div class="messages-container">
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }}" role="alert">
+            <span>{{ message }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% block content %}
+    {% endblock %}
+  </main>
+
+  <!-- Page Footer -->
+  <footer class="footer">
+    <div class="nav-container" style="justify-content: center; flex-direction: column; gap: 0.3rem;">
+      <p><strong>OrgEventManager</strong> &copy; 2026 Student Organization Event &amp; Attendance Manager</p>
+      <p style="font-size: 0.8rem; color: var(--text-muted);">Phase 1: Project Setup + Account Feature with Supabase PostgreSQL</p>
+    </div>
+  </footer>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>
