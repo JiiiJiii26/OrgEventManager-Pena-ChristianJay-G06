@@ -1,11 +1,11 @@
 """
 Forms for Events app.
-Handles Event creation and editing with past-date validation.
+Handles Event creation/updating and Member RSVP submissions.
 """
 
 from django import forms
 from django.utils import timezone
-from .models import Event
+from .models import Event, RSVP
 
 
 class EventForm(forms.ModelForm):
@@ -55,3 +55,17 @@ class EventForm(forms.ModelForm):
         if capacity is not None and capacity <= 0:
             raise forms.ValidationError('Event capacity must be at least 1 attendee.')
         return capacity
+
+
+class RSVPForm(forms.ModelForm):
+    """
+    Form for Members to indicate attendance status (GOING / NOT_GOING).
+    """
+    class Meta:
+        model = RSVP
+        fields = ['status']
+        widgets = {
+            'status': forms.Select(attrs={
+                'class': 'form-control form-select',
+            })
+        }

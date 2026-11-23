@@ -1,6 +1,6 @@
 """
 Events App Models - Phase 2 Core Feature.
-Defines Event model with full CRUD attributes and relationship to CustomUser.
+Defines Event and RSVP models with attendance metrics and relational constraints.
 """
 
 from django.db import models
@@ -57,3 +57,71 @@ class Event(models.Model):
     def is_past(self):
         """Returns True if the event has already concluded."""
         return self.date_time < timezone.now()
+
+    @property
+    def confirmed_rsvps(self):
+        """Returns QuerySet of confirmed attendee RSVPs."""
+        return self.rsvps.filter(status='GOING').select_related('user')
+
+    @property
+    def confirmed_count(self):
+        """Number of confirmed attendees."""
+        return self.confirmed_rsvps.count()
+
+    @property
+    def available_spots(self):
+        """Remaining RSVP slots before capacity is reached."""
+        return max(0, self.capacity - self.confirmed_count)
+
+    @property
+    def is_full(self):
+        """Returns True if confirmed RSVPs have reached maximum capacity."""
+        return self.confirmed_count >= self.capacity
+
+    def get_user_rsvp(self, user):
+        """Helper to retrieve a specific user's RSVP status for this event."""
+        if not user.is_authenticated:
+            return None
+        return self.rsvps.filter(user=user).first()
+
+
+class RSVP(models.Model):
+    """
+    RSVP model capturing member attendance intentions for organization events.
+    Constrained to one unique RSVP record per user per event.
+    """
+    class Status(models.TextChoices):
+        GOING = 'GOING', 'Going'
+        NOT_GOING = 'NOT_GOING', 'Not Going'
+
+    event = models.ForeignKey(
+        Event,
+        on_delete=models.CASCADE,
+        related_name='rsvps',
+        help_text='Event being RSVPed to.'
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='rsvps',
+        help_text='Student member submitting the RSVP.'
+    )
+    status = models.CharField(
+        max_length=15,
+        choices=Status.choices,
+        default=Status.GOING,
+        help_text='Attendance status.'
+    )
+    timestamp = models.DateTimeField(
+        auto_now=True,
+        help_text='Timestamp of the last status update.'
+    )
+
+    class Meta:
+        unique_together = ('event', 'user')
+        ordering = ['-timestamp']
+        verbose_name = 'RSVP'
+        verbose_name_plural = 'RSVPs'
+
+    def __str__(self):
+        return f"{self.user.username} -> {self.event.title} ({self.get_status_display()})"

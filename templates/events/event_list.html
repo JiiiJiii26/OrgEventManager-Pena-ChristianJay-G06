@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}Upcoming Events | OrgEventManager{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+  <div>
+    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.35rem;">
+      <h1 class="dashboard-title">Upcoming Organization Events</h1>
+      <span class="badge badge-member">Events Directory</span>
+    </div>
+    <p class="dashboard-subtitle">
+      Discover upcoming assemblies, workshops, and student gatherings. RSVP to secure your attendance spot.
+    </p>
+  </div>
+  <div>
+    <a href="{% url 'events:my_rsvps' %}" class="btn btn-secondary">
+      <svg style="width: 18px; height: 18px; fill: currentColor;" viewBox="0 0 24 24">
+        <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/>
+      </svg>
+      My RSVPs
+    </a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">All Future Events</h2>
+    <span class="badge badge-info">{{ events_data|length }} Scheduled Event{{ events_data|length|pluralize }}</span>
+  </div>
+
+  <div class="card-body">
+    {% if events_data %}
+      <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+        {% for item in events_data %}
+          {% with event=item.event status=item.user_rsvp_status %}
+            <div style="padding: 1.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); background: #ffffff; display: flex; justify-content: space-between; align-items: flex-start; gap: 1.5rem; flex-wrap: wrap;">
+              <div style="flex: 1; min-width: 280px;">
+                <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
+                  <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-main);">
+                    <a href="{% url 'events:event_detail' event.pk %}" style="text-decoration: none; color: inherit;">
+                      {{ event.title }}
+                    </a>
+                  </h3>
+
+                  {% if status == 'GOING' %}
+                    <span class="badge badge-success">✓ You're Going</span>
+                  {% elif status == 'NOT_GOING' %}
+                    <span class="badge" style="background-color: #fee2e2; color: #991b1b;">Not Going</span>
+                  {% else %}
+                    <span class="badge badge-info">Open for RSVP</span>
+                  {% endif %}
+
+                  {% if event.is_full and status != 'GOING' %}
+                    <span class="badge" style="background-color: #fee2e2; color: #991b1b;">At Capacity</span>
+                  {% endif %}
+                </div>
+
+                <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 0.75rem; line-height: 1.6;">
+                  {{ event.description|truncatewords:30|default:"No description provided." }}
+                </p>
+
+                <div style="font-size: 0.88rem; color: #475569; display: flex; gap: 1.5rem; flex-wrap: wrap;">
+                  <span>📅 <strong>{{ event.date_time|date:"F d, Y - h:i A" }}</strong></span>
+                  <span>📍 <strong>{{ event.venue }}</strong></span>
+                  <span>👥 <strong>{{ event.confirmed_count }}/{{ event.capacity }}</strong> Confirmed ({{ event.available_spots }} spots left)</span>
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;">
+                <a href="{% url 'events:event_detail' event.pk %}" class="btn btn-outline btn-sm">
+                  View Details
+                </a>
+
+                {% if status == 'GOING' %}
+                  <form method="POST" action="{% url 'events:rsvp_event' event.pk %}" style="margin: 0;">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="NOT_GOING">
+                    <button type="submit" class="btn btn-secondary btn-sm" title="Change attendance status">
+                      Change to Not Going
+                    </button>
+                  </form>
+                {% else %}
+                  <form method="POST" action="{% url 'events:rsvp_event' event.pk %}" style="margin: 0;">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="GOING">
+                    <button type="submit" class="btn btn-primary btn-sm" {% if event.is_full %}disabled title="Event is at capacity"{% endif %}>
+                      {% if event.is_full %}Capacity Full{% else %}RSVP Going{% endif %}
+                    </button>
+                  </form>
+                {% endif %}
+              </div>
+            </div>
+          {% endwith %}
+        {% endfor %}
+      </div>
+    {% else %}
+      <div style="text-align: center; padding: 3.5rem 1.5rem;">
+        <p style="font-size: 1.1rem; color: var(--text-muted); margin-bottom: 1rem;">
+          No upcoming organization events are scheduled right now.
+        </p>
+        <span style="font-size: 0.9rem; color: var(--text-muted);">
+          Please check back soon or contact your organization officers.
+        </span>
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="card-footer" style="display: flex; justify-content: space-between; align-items: center;">
+    <a href="{% url 'accounts:member_dashboard' %}" class="btn btn-outline btn-sm">
+      &larr; Back to Member Dashboard
+    </a>
+  </div>
+</div>
+{% endblock %}
