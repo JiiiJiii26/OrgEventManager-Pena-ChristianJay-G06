@@ -1,0 +1,133 @@
+================================================================================
+PROJECT DEVELOPMENT 2 (PD2) COMPLETION REPORT
+OrgEventManager - Student Organization Event & Attendance Manager
+================================================================================
+
+Student Name   : Christian Jay Peña
+Section        : G06
+Repository Name: OrgEventManager-Pena-ChristianJay-G06
+GitHub URL     : https://github.com/JiiiJiii26/OrgEventManager-Pena-ChristianJay-G06.git
+Branch Target  : main (via develop and feature branches)
+Date Completed : November 23, 2026
+
+--------------------------------------------------------------------------------
+1. EXECUTIVE SUMMARY & OBJECTIVES ACHIEVED
+--------------------------------------------------------------------------------
+In Project Development 2 (PD2), the Core Feature slice was implemented as a
+complete vertical slice (Database Schema -> Backend Controller & Validation ->
+Frontend UI & Interactive Forms) on top of the Phase 1 Account & Role infrastructure.
+
+All database models were migrated to the live Supabase PostgreSQL instance.
+The development followed a strict Git branching strategy utilizing dedicated
+feature branches, a persistent develop integration branch, and pull requests
+merged into develop and subsequently into main.
+
+--------------------------------------------------------------------------------
+2. FEATURES IMPLEMENTED (VERTICAL SLICE)
+--------------------------------------------------------------------------------
+A. Event Creation & Management (Officer CRUD)
+   - Database Model: Real Event model with fields: title, description,
+     date_time (DateTimeField), venue, capacity (PositiveIntegerField),
+     created_by (ForeignKey to CustomUser with related_name='created_events'),
+     created_at, and updated_at timestamps.
+   - Validation & Form: EventForm enforces that scheduled date_time cannot be in
+     the past, and capacity must be at least 1 attendee.
+   - Views & Endpoints:
+     * /events/create/ (event_create): Officer-only view to publish events.
+     * /events/<id>/edit/ (event_update): Officer-only view to update event info.
+     * /events/<id>/delete/ (event_delete): Officer confirmation & deletion view.
+     * /events/manage/ (officer_event_list): Officer management dashboard with
+       live attendee tallies, edit, and delete triggers.
+   - Access Control: Enforced via @login_required and @officer_required decorators.
+
+B. RSVP & Attendance Tracking (Member & Shared)
+   - Database Model: RSVP model with event (FK), user (FK), status (ChoiceField:
+     'GOING', 'NOT_GOING'), and auto_now timestamp. Constrained with
+     unique_together = ('event', 'user') so a member can only have one RSVP per event.
+   - Business Logic & Capacity Protection:
+     * Prevents overbooking: Users cannot RSVP as 'GOING' if event is at capacity.
+     * Live counts: Event.confirmed_count, Event.available_spots, and Event.is_full.
+   - Views & Endpoints:
+     * /events/ (upcoming_events): Public/Member directory showing future events,
+       remaining spots, and the user's current RSVP status.
+     * /events/<id>/ (event_detail): Comprehensive event view with interactive
+       RSVP submission card for members, and a live Attendee Roster table for officers.
+     * /events/<id>/rsvp/ (rsvp_event): POST action handling attendance marking.
+     * /events/my-rsvps/ (my_rsvps): Member dashboard of personal attendance history.
+     * /events/attendance/ (attendance_tracker): Officer overview of all sessions.
+   - Access Control: Enforced via @login_required and @member_required decorators.
+
+--------------------------------------------------------------------------------
+3. GIT BRANCHING & PULL REQUEST STRATEGY
+--------------------------------------------------------------------------------
+The project adhered to GitFlow conventions without direct commits to main:
+
+1. develop Branch:
+   - Created from main and pushed to origin/develop as the integration branch.
+
+2. Feature Branch 1: feature/event-crud
+   - Branched from develop: git checkout -b feature/event-crud
+   - Implemented: Event model, migrations (0002), EventForm, Officer CRUD views,
+     and templates (event_form.html, event_confirm_delete.html, officer_event_list.html).
+   - Pushed to remote: origin/feature/event-crud
+   - Merged into develop via non-fast-forward merge commit:
+     "Merge pull request from feature/event-crud: Add Event CRUD for Officers"
+
+3. Feature Branch 2: feature/rsvp-tracking
+   - Branched from develop: git checkout -b feature/rsvp-tracking
+   - Implemented: RSVP model, migrations (0003), RSVPForm, Member views,
+     event_detail.html, event_list.html, my_rsvps.html, attendance_tracker.html.
+   - Pushed to remote: origin/feature/rsvp-tracking
+   - Merged into develop via non-fast-forward merge commit:
+     "Merge pull request from feature/rsvp-tracking: Implement RSVP and attendance tracking"
+
+4. Main Integration:
+   - Merged develop into main via non-fast-forward merge commit:
+     "Merge branch 'develop' into main: Project Development 2 Core Feature"
+   - Pushed to origin/main.
+   - All feature branches retained on remote for grading and review.
+
+--------------------------------------------------------------------------------
+4. TEST ACCOUNTS & VERIFICATION
+--------------------------------------------------------------------------------
+The project includes pre-seeded test accounts with secure PBKDF2-hashed passwords:
+
+1. Officer Account (Event Organizer / Admin)
+   - Username: officer_alex
+   - Email   : officer@university.edu
+   - Password: Password123!
+   - Capabilities: Create events, edit/delete authored events, inspect attendee rosters.
+
+2. Member Account (Student / Attendee)
+   - Username: member_taylor
+   - Email   : member@university.edu
+   - Password: Password123!
+   - Capabilities: Browse upcoming events, RSVP Going/Not Going, inspect personal RSVPs.
+
+Verification Test Flow:
+1. Log in as officer_alex -> Navigate to /events/create/ -> Publish new event.
+2. Confirm event appears on Officer Dashboard and Officer Event Manager.
+3. Log out -> Log in as member_taylor -> Navigate to /events/upcoming/.
+4. Click RSVP Going -> Spot count decrements, status badge updates to "Going".
+5. Log out -> Log back in as officer_alex -> Open /events/<id>/.
+6. Confirm member_taylor appears on the Attendee Roster table with timestamp.
+7. Test Edit (/events/<id>/edit/) and Delete (/events/<id>/delete/).
+
+--------------------------------------------------------------------------------
+5. OUTSTANDING ISSUES & REMAINING TASKS
+--------------------------------------------------------------------------------
+A. Outstanding Issues:
+   - NONE. All Django system checks report 0 issues.
+   - All migrations applied successfully to Supabase PostgreSQL.
+   - All templates compile and render without NoReverseMatch errors.
+   - Form validation prevents past-dated events and negative capacities.
+   - Capacity overflow guards prevent attendance beyond limit.
+
+B. Remaining Tasks (Roadmap for Phase 3):
+   - PDF & CSV attendance roster export for university audit compliance.
+   - On-site QR Code check-in scanner for instant mobile roll-call.
+   - Automated email notifications/reminders 24 hours prior to scheduled events.
+
+================================================================================
+END OF REPORT
+================================================================================
