@@ -142,34 +142,36 @@ def member_dashboard_view(request):
     """
     Member (Customer) Dashboard:
     Displays upcoming organization events, RSVP actions, and personal attendance history.
+    Queries real events and user RSVPs from Supabase.
     """
+    from django.utils import timezone
+    from events.models import Event, RSVP
+
+    all_upcoming = Event.objects.filter(date_time__gte=timezone.now()).order_by('date_time')
+    user_rsvps = {
+        r.event_id: r.status
+        for r in RSVP.objects.filter(user=request.user)
+    }
+
+    my_confirmed_rsvps = RSVP.objects.filter(user=request.user, status='GOING').count()
+    total_upcoming = all_upcoming.count()
+
+    upcoming_list = []
+    for ev in all_upcoming[:4]:
+        upcoming_list.append({
+            'event': ev,
+            'user_rsvp_status': user_rsvps.get(ev.id),
+        })
+
     context = {
         'page_title': 'Member Dashboard',
         'active_tab': 'member_dashboard',
-        # Phase 1 placeholder statistics & activity
         'stats': {
-            'upcoming_events': 2,
-            'my_rsvps': 1,
-            'attendance_rate': '92%',
+            'upcoming_events': total_upcoming,
+            'my_rsvps': my_confirmed_rsvps,
+            'attendance_rate': f"{int((my_confirmed_rsvps / total_upcoming * 100))}%" if total_upcoming else "100%",
         },
-        'upcoming_events': [
-            {
-                'id': 1,
-                'title': 'General Assembly 2026',
-                'date': 'November 20, 2026 - 2:00 PM',
-                'location': 'University Auditorium',
-                'description': 'Annual orientation and committee announcements for all active student members.',
-                'user_rsvp_status': 'Confirmed',
-            },
-            {
-                'id': 2,
-                'title': 'Tech Stack & Git Workshop',
-                'date': 'November 28, 2026 - 10:00 AM',
-                'location': 'CS Lab 301',
-                'description': 'Hands-on training session on modern web workflows and collaborative repositories.',
-                'user_rsvp_status': 'Not RSVPed',
-            },
-        ]
+        'upcoming_events_data': upcoming_list,
     }
     return render(request, 'accounts/member_dashboard.html', context)
 

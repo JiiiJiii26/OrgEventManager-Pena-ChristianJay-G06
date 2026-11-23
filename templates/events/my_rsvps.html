@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}My Event RSVPs | OrgEventManager{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+  <div>
+    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.35rem;">
+      <h1 class="dashboard-title">My Event RSVPs &amp; Attendance Records</h1>
+      <span class="badge badge-member">Personal History</span>
+    </div>
+    <p class="dashboard-subtitle">
+      Review your confirmed attendance passes, responses, and event schedules.
+    </p>
+  </div>
+  <div>
+    <a href="{% url 'events:upcoming_events' %}" class="btn btn-primary">
+      <svg style="width: 18px; height: 18px; fill: currentColor;" viewBox="0 0 24 24">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+      </svg>
+      Browse Upcoming Events
+    </a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">Registered Events</h2>
+    <span class="badge badge-info">{{ rsvps.count }} Response{{ rsvps.count|pluralize }}</span>
+  </div>
+
+  <div class="card-body" style="padding: 0;">
+    {% if rsvps %}
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Event Title</th>
+              <th>Date &amp; Time</th>
+              <th>Venue</th>
+              <th>My Status</th>
+              <th>Last Updated</th>
+              <th style="text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in rsvps %}
+              <tr>
+                <td>
+                  <strong>{{ r.event.title }}</strong>
+                </td>
+                <td>{{ r.event.date_time|date:"M d, Y - h:i A" }}</td>
+                <td>{{ r.event.venue }}</td>
+                <td>
+                  {% if r.status == 'GOING' %}
+                    <span class="badge badge-success">✓ Confirmed Going</span>
+                  {% else %}
+                    <span class="badge" style="background-color: #fee2e2; color: #991b1b;">Not Going</span>
+                  {% endif %}
+                </td>
+                <td style="color: var(--text-muted); font-size: 0.85rem;">
+                  {{ r.timestamp|date:"M d, Y" }}
+                </td>
+                <td style="text-align: right;">
+                  <a href="{% url 'events:event_detail' r.event.pk %}" class="btn btn-outline btn-sm">
+                    View Details
+                  </a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div style="text-align: center; padding: 3rem 1.5rem;">
+        <p style="font-size: 1.05rem; color: var(--text-muted); margin-bottom: 1rem;">
+          You haven't responded to any events yet.
+        </p>
+        <a href="{% url 'events:upcoming_events' %}" class="btn btn-primary">
+          Explore Upcoming Events
+        </a>
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="card-footer" style="display: flex; justify-content: space-between; align-items: center;">
+    <a href="{% url 'accounts:member_dashboard' %}" class="btn btn-outline btn-sm">
+      &larr; Back to Member Dashboard
+    </a>
+  </div>
+</div>
+{% endblock %}
