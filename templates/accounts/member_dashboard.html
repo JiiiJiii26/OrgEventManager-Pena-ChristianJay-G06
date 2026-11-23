@@ -19,7 +19,7 @@
       <svg style="width: 18px; height: 18px; fill: currentColor;" viewBox="0 0 24 24">
         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
       </svg>
-      Browse Events
+      Browse All Events
     </a>
   </div>
 </div>
@@ -52,7 +52,7 @@
   </div>
   <div class="stat-card">
     <span class="stat-value">{{ stats.attendance_rate }}</span>
-    <span class="stat-label">My Attendance Rate</span>
+    <span class="stat-label">My Participation Rate</span>
   </div>
 </div>
 
@@ -60,46 +60,79 @@
 <div class="card">
   <div class="card-header">
     <h2 class="card-title">Featured Upcoming Organization Events</h2>
-    <span class="badge badge-info">Phase 1 Preview</span>
+    <a href="{% url 'events:upcoming_events' %}" class="btn btn-outline btn-sm">View All &rarr;</a>
   </div>
 
   <div class="card-body">
-    <div style="display: flex; flex-direction: column; gap: 1.25rem;">
-      {% for event in upcoming_events %}
-        <div style="padding: 1.25rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); background: #ffffff; display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap;">
-          <div style="flex: 1; min-width: 250px;">
-            <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.35rem;">
-              <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-main);">{{ event.title }}</h3>
-              {% if event.user_rsvp_status == 'Confirmed' %}
-                <span class="badge badge-success">RSVP Confirmed</span>
-              {% else %}
-                <span class="badge" style="background-color: #f1f5f9; color: #475569;">Open for RSVP</span>
-              {% endif %}
-            </div>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem; line-height: 1.5;">
-              {{ event.description }}
-            </p>
-            <div style="font-size: 0.85rem; color: #475569; display: flex; gap: 1.5rem; flex-wrap: wrap;">
-              <span>📅 <strong>{{ event.date }}</strong></span>
-              <span>📍 <strong>{{ event.location }}</strong></span>
-            </div>
-          </div>
+    {% if upcoming_events_data %}
+      <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+        {% for item in upcoming_events_data %}
+          {% with event=item.event status=item.user_rsvp_status %}
+            <div style="padding: 1.25rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); background: #ffffff; display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap;">
+              <div style="flex: 1; min-width: 250px;">
+                <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.35rem; flex-wrap: wrap;">
+                  <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-main);">
+                    <a href="{% url 'events:event_detail' event.pk %}" style="text-decoration: none; color: inherit;">
+                      {{ event.title }}
+                    </a>
+                  </h3>
+                  {% if status == 'GOING' %}
+                    <span class="badge badge-success">✓ You're Going</span>
+                  {% elif status == 'NOT_GOING' %}
+                    <span class="badge" style="background-color: #fee2e2; color: #991b1b;">Not Going</span>
+                  {% else %}
+                    <span class="badge badge-info">Open for RSVP</span>
+                  {% endif %}
 
-          <div style="display: flex; gap: 0.5rem; align-items: center;">
-            {% if event.user_rsvp_status == 'Confirmed' %}
-              <a href="{% url 'events:my_rsvps' %}" class="btn btn-outline btn-sm">View RSVP Pass</a>
-            {% else %}
-              <a href="{% url 'events:upcoming_events' %}" class="btn btn-primary btn-sm">RSVP Now</a>
-            {% endif %}
-          </div>
-        </div>
-      {% endfor %}
-    </div>
+                  {% if event.is_full and status != 'GOING' %}
+                    <span class="badge" style="background-color: #fee2e2; color: #991b1b;">Capacity Full</span>
+                  {% endif %}
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem; line-height: 1.5;">
+                  {{ event.description|truncatewords:25|default:"No description provided." }}
+                </p>
+                <div style="font-size: 0.85rem; color: #475569; display: flex; gap: 1.5rem; flex-wrap: wrap;">
+                  <span>📅 <strong>{{ event.date_time|date:"M d, Y - h:i A" }}</strong></span>
+                  <span>📍 <strong>{{ event.venue }}</strong></span>
+                  <span>👥 <strong>{{ event.confirmed_count }}/{{ event.capacity }}</strong> ({{ event.available_spots }} spots left)</span>
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                <a href="{% url 'events:event_detail' event.pk %}" class="btn btn-outline btn-sm">Details</a>
+
+                {% if status == 'GOING' %}
+                  <form method="POST" action="{% url 'events:rsvp_event' event.pk %}" style="margin: 0;">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="NOT_GOING">
+                    <button type="submit" class="btn btn-secondary btn-sm">Not Going</button>
+                  </form>
+                {% else %}
+                  <form method="POST" action="{% url 'events:rsvp_event' event.pk %}" style="margin: 0;">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="GOING">
+                    <button type="submit" class="btn btn-primary btn-sm" {% if event.is_full %}disabled{% endif %}>
+                      {% if event.is_full %}Full{% else %}RSVP Going{% endif %}
+                    </button>
+                  </form>
+                {% endif %}
+              </div>
+            </div>
+          {% endwith %}
+        {% endfor %}
+      </div>
+    {% else %}
+      <div style="text-align: center; padding: 2.5rem 1.5rem;">
+        <p style="color: var(--text-muted); margin-bottom: 0.75rem;">
+          No upcoming organization events scheduled yet.
+        </p>
+      </div>
+    {% endif %}
   </div>
 
   <div class="card-footer" style="display: flex; justify-content: space-between; align-items: center;">
     <span style="font-size: 0.85rem; color: var(--text-muted);">
-      Real-time RSVP toggles and personal QR code passes will be activated in Phase 2.
+      RSVPs secure your attendee slot and update the live event roster.
     </span>
     <a href="{% url 'events:upcoming_events' %}" class="btn btn-secondary btn-sm">View All Events &rarr;</a>
   </div>

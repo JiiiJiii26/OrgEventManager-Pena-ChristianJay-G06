@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ event.title }} | Event Details{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+  <div>
+    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.35rem;">
+      <h1 class="dashboard-title">{{ event.title }}</h1>
+      {% if event.is_past %}
+        <span class="badge" style="background-color: #f1f5f9; color: #64748b;">Completed</span>
+      {% else %}
+        <span class="badge badge-success">Upcoming</span>
+      {% endif %}
+    </div>
+    <p class="dashboard-subtitle">
+      Organized by <strong>{{ event.created_by.display_name|default:"Organization Officer" }}</strong> &bull; Published on {{ event.created_at|date:"M d, Y" }}
+    </p>
+  </div>
+
+  <div style="display: flex; gap: 0.75rem;">
+    {% if user.is_officer %}
+      <a href="{% url 'events:event_update' event.pk %}" class="btn btn-outline btn-sm">Edit Event</a>
+      <a href="{% url 'events:event_delete' event.pk %}" class="btn btn-secondary btn-sm" style="color: #b91c1c;">Delete</a>
+    {% endif %}
+    <a href="{% url 'events:upcoming_events' %}" class="btn btn-secondary btn-sm">&larr; Back to Events</a>
+  </div>
+</div>
+
+<div class="profile-grid">
+  <!-- Left Column: Event Overview & Information -->
+  <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Event Information</h2>
+        <span class="badge badge-info">{{ event.available_spots }} Slots Available</span>
+      </div>
+
+      <div class="card-body">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; margin-bottom: 1.75rem;">
+          <div style="padding: 1rem; background-color: #f8fafc; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+            <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Date &amp; Time</div>
+            <div style="font-size: 1.05rem; font-weight: 700; color: var(--text-main); margin-top: 0.25rem;">
+              {{ event.date_time|date:"F d, Y" }}
+            </div>
+            <div style="font-size: 0.9rem; color: var(--primary); font-weight: 600;">
+              {{ event.date_time|date:"h:i A" }}
+            </div>
+          </div>
+
+          <div style="padding: 1rem; background-color: #f8fafc; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+            <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Venue</div>
+            <div style="font-size: 1.05rem; font-weight: 700; color: var(--text-main); margin-top: 0.25rem;">
+              {{ event.venue }}
+            </div>
+            <div style="font-size: 0.85rem; color: var(--text-muted);">
+              Physical / Campus Location
+            </div>
+          </div>
+
+          <div style="padding: 1rem; background-color: #f8fafc; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+            <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Attendance Capacity</div>
+            <div style="font-size: 1.05rem; font-weight: 700; color: var(--text-main); margin-top: 0.25rem;">
+              {{ event.confirmed_count }} / {{ event.capacity }}
+            </div>
+            <div style="font-size: 0.85rem; color: var(--text-muted);">
+              Confirmed Attendees
+            </div>
+          </div>
+        </div>
+
+        <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem;">Event Details &amp; Agenda</h3>
+        <p style="font-size: 0.95rem; color: var(--text-main); line-height: 1.7; white-space: pre-line;">
+          {{ event.description|default:"No additional guidelines or details provided for this event." }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Column: RSVP Actions Card -->
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Your RSVP Status</h2>
+      </div>
+
+      <div class="card-body">
+        <div style="text-align: center; padding: 1rem 0; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color);">
+          <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">Current Response</div>
+          {% if user_rsvp %}
+            {% if user_rsvp.status == 'GOING' %}
+              <div style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1.2rem; background-color: #dcfce7; color: #166534; border-radius: 9999px; font-weight: 700; font-size: 1rem;">
+                ✓ Confirmed Going
+              </div>
+              <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.4rem;">
+                Last updated: {{ user_rsvp.timestamp|date:"M d, Y - h:i A" }}
+              </div>
+            {% else %}
+              <div style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1.2rem; background-color: #fee2e2; color: #991b1b; border-radius: 9999px; font-weight: 700; font-size: 1rem;">
+                ✕ Not Going
+              </div>
+              <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.4rem;">
+                Last updated: {{ user_rsvp.timestamp|date:"M d, Y - h:i A" }}
+              </div>
+            {% endif %}
+          {% else %}
+            <div style="display: inline-flex; align-items: center; padding: 0.5rem 1.2rem; background-color: #f1f5f9; color: #475569; border-radius: 9999px; font-weight: 600; font-size: 0.95rem;">
+              No Response Yet
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.4rem;">
+              Select an option below to update your attendance.
+            </div>
+          {% endif %}
+        </div>
+
+        {% if event.is_full and user_rsvp.status != 'GOING' %}
+          <div class="alert alert-warning" style="font-size: 0.88rem; margin-bottom: 1.25rem;">
+            <span>This event has reached its maximum capacity ({{ event.capacity }} attendees). You can mark "Not Going" or check back later if a spot opens.</span>
+          </div>
+        {% endif %}
+
+        <form method="POST" action="{% url 'events:rsvp_event' event.pk %}">
+          {% csrf_token %}
+          <div class="form-group">
+            <label class="form-label">Update Attendance:</label>
+            <select name="status" class="form-control form-select">
+              <option value="GOING" {% if user_rsvp.status == 'GOING' %}selected{% endif %}>
+                Going (Confirm Attendance)
+              </option>
+              <option value="NOT_GOING" {% if user_rsvp.status == 'NOT_GOING' %}selected{% endif %}>
+                Not Going (Decline)
+              </option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block" {% if event.is_full and user_rsvp.status != 'GOING' %}disabled{% endif %}>
+            Save RSVP
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Officer Attendee Roster Section -->
+{% if user.is_officer or user.is_superuser %}
+  <div class="card" style="margin-top: 2rem;">
+    <div class="card-header">
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <h2 class="card-title">Attendee Roster &amp; Attendance Tracking</h2>
+        <span class="badge badge-officer">Officer Access Only</span>
+      </div>
+      <span class="badge badge-info">{{ event.confirmed_count }} Confirmed / {{ attendees.count }} Total Responses</span>
+    </div>
+
+    <div class="card-body" style="padding: 0;">
+      {% if attendees %}
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Attendee Name</th>
+                <th>Username</th>
+                <th>Email Address</th>
+                <th>Contact</th>
+                <th>RSVP Status</th>
+                <th style="text-align: right;">Response Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for att in attendees %}
+                <tr>
+                  <td>
+                    <strong>{{ att.user.display_name }}</strong>
+                  </td>
+                  <td>@{{ att.user.username }}</td>
+                  <td>{{ att.user.email }}</td>
+                  <td>{{ att.user.contact_number|default:"-" }}</td>
+                  <td>
+                    {% if att.status == 'GOING' %}
+                      <span class="badge badge-success">Going</span>
+                    {% else %}
+                      <span class="badge" style="background-color: #fee2e2; color: #991b1b;">Not Going</span>
+                    {% endif %}
+                  </td>
+                  <td style="text-align: right; color: var(--text-muted); font-size: 0.85rem;">
+                    {{ att.timestamp|date:"M d, Y - h:i A" }}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div style="text-align: center; padding: 2.5rem 1.5rem;">
+          <p style="color: var(--text-muted); margin: 0;">
+            No members have submitted an RSVP for this event yet.
+          </p>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="card-footer" style="display: flex; justify-content: space-between; align-items: center;">
+      <span style="font-size: 0.85rem; color: var(--text-muted);">
+        Attendance roster updates automatically when members RSVP in real time.
+      </span>
+      <a href="{% url 'events:attendance_tracker' %}" class="btn btn-outline btn-sm">
+        All Event Rosters &rarr;
+      </a>
+    </div>
+  </div>
+{% endif %}
+{% endblock %}
