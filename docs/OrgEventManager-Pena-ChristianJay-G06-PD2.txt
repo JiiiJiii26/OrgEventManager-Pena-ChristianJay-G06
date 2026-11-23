@@ -1,0 +1,102 @@
+Project Development 2
+Implementation / Completion Report
+
+Project Information
+| System Name       | OrgEventManager                                                                 |
+| Student Name     | Peña, Christian Jay                                                            |
+| Section          | G06                                                                            |
+| Increment        | Project Development 2 – Core Feature (Vertical Slice)                          |
+| GitHub Repository| https://github.com/JiiiJiii26/OrgEventManager-Pena-ChristianJay-G06            |
+| Date Submitted   | 11/23/2026                                                                     |
+
+1. Project Overview
+OrgEventManager is a web application designed for campus student organizations to streamline event scheduling, live attendee roll-calls, and member participation tracking. It serves organization leaders (Officers) and general student attendees (Members), replacing manual paper rosters and chaotic social media chats with a structured, role-based platform.
+
+Core feature for this increment: Event Creation & Attendance Tracking (RSVP)
+Event Creation and Attendance Tracking represents the foundational core of an event management system, establishing the primary workflow where Officers publish campus activities and Members register attendance. Without the capability to schedule events and monitor RSVPs against venue capacity, subsequent modules such as attendance auditing, reporting, and certificate generation cannot function.
+
+2. Features Implemented in This Increment
+2.1 Standard Features (from Project Development 1)
+| Feature                        | Status   | Notes                                                                                                     |
+| Account Registration           | Complete | CustomUserCreationForm supporting username, email, full name, contact number, role, and PBKDF2 hashing. |
+| Login / Logout                 | Complete | Dual-identifier authentication backend supporting Username OR Email with session destruction alerts.     |
+| Role-Based User Dashboard      | Complete | Dedicated dashboards (/dashboard/officer/ and /dashboard/member/) enforced via @role_required.           |
+| User Profile (view and edit)   | Complete | Self-service profile management (/profile/) with contact information editing and avatar image upload.    |
+
+2.2 Core Feature: Event Creation & Attendance Tracking (RSVP)
+Description:
+This feature enables Officers to publish, update, and delete campus events with venue, schedule, and attendee capacity limits. It simultaneously allows Members to browse an active directory of upcoming activities, submit their attendance intentions (Going vs Not Going), and track their participation history, while preventing capacity overbooking.
+
+User Roles and Access
+| Role             | What this role can do in the feature                                                                             |
+| Member (Student) | Browse upcoming events directory, view detailed event agendas, submit and update RSVP status, view RSVP history. |
+| Officer (Admin)  | Create events, update event details, delete events, review management tables, inspect attendee rosters.          |
+
+User Flow
+Step 1: An Officer logs in and clicks "Create Event" on the Officer Dashboard or top navigation bar.
+Step 2: The Officer fills in the event title, description, scheduled future date and time, venue, and attendee capacity, then clicks "Publish Event".
+Step 3: The event is saved in the Supabase PostgreSQL database and immediately listed in the Officer Event Manager and Member Upcoming Events directory.
+Step 4: A Member logs in, navigates to "Upcoming Events", and reviews the scheduled event with available seats remaining.
+Step 5: The Member clicks "View Details", selects their attendance status ("Going" or "Not Going"), and clicks "Save RSVP".
+Step 6: The system records the RSVP, decrements available capacity, updates the Member dashboard, and populates the live Attendee Roster visible to Officers.
+
+CRUD Operations
+| Operation | Implemented? (Yes/No) | Where in the UI                                                         | Who can do it   |
+| Create    | Yes                   | Create Event Page (/events/create/)                                     | Officer         |
+| Read      | Yes                   | Upcoming Events Directory (/events/upcoming/) & Detail (/events/<id>/)  | Officer, Member |
+| Update    | Yes                   | Edit Event (/events/<id>/edit/) & RSVP Response (/events/<id>/rsvp/)   | Officer, Member |
+| Delete    | Yes                   | Delete Event Confirmation (/events/<id>/delete/)                        | Officer         |
+
+Database Models
+| Model / Table | Key Fields                                                          | Relationships (ForeignKey / ManyToMany)                                     |
+| Event         | id, title, description, date_time, venue, capacity, created_at      | ForeignKey → CustomUser (created_by, related_name='created_events')         |
+| RSVP          | id, status ('GOING', 'NOT_GOING'), timestamp                        | ForeignKey → Event (event), ForeignKey → CustomUser (user) [unique_together]|
+
+Key Files
+| Layer     | File path(s)                                                                                                                                                                          |
+| Models    | events/models.py                                                                                                                                                                      |
+| Views     | events/views.py, accounts/views.py                                                                                                                                                    |
+| URLs      | events/urls.py, orgevent/urls.py                                                                                                                                                      |
+| Forms     | events/forms.py                                                                                                                                                                       |
+| Templates | templates/events/event_form.html, templates/events/event_list.html, templates/events/event_detail.html, templates/events/event_confirm_delete.html, templates/events/my_rsvps.html    |
+
+Validation and Business Rules
+| Rule                                      | How it is enforced                                                                                                                                   |
+| Event date cannot be scheduled in past   | Enforced in EventForm clean_date_time(); raises forms.ValidationError if date_time < timezone.now().                                                 |
+| Event capacity must be at least 1        | Enforced in EventForm clean_capacity() and PositiveIntegerField model constraint.                                                                    |
+| One RSVP per user per event              | Enforced at the database level via unique_together = ('event', 'user') on the RSVP model and update_or_create logic in views.py.                       |
+| Event capacity overflow protection        | Enforced in rsvp_event view; blocks 'GOING' submissions with an error flash alert when event.is_full is True.                                           |
+| Strict role-based access control         | Enforced via @officer_required and @member_required view decorators; unauthorized access attempts are redirected to user's dashboard with an alert.   |
+
+Branches and Pull Requests
+| Branch                | Merged Into | Pull Request Link                                                                           | What it contains                                                                                     |
+| feature/event-crud    | develop     | https://github.com/JiiiJiii26/OrgEventManager-Pena-ChristianJay-G06/pull/new/feature/event-crud   | Implements Event model, migrations (0002), EventForm, Officer CRUD views, and form/delete templates. |
+| feature/rsvp-tracking | develop     | https://github.com/JiiiJiii26/OrgEventManager-Pena-ChristianJay-G06/pull/new/feature/rsvp-tracking| Implements RSVP model, migrations (0003), RSVPForm, Member views, event detail, and attendee roster.  |
+| develop               | main        | https://github.com/JiiiJiii26/OrgEventManager-Pena-ChristianJay-G06/compare/main...develop  | Increment release: Merges all validated core features, UI templates, and documentation into main.    |
+
+Screenshots
+[Screenshot 1 – Officer Event Creation Form (/events/create/)]
+[Screenshot 2 – Validation Error on Scheduling Event in the Past]
+[Screenshot 3 – Officer Event Management Table showing Live Tallies (/events/manage/)]
+[Screenshot 4 – Member Upcoming Events Directory with 1-Click RSVP Action (/events/upcoming/)]
+[Screenshot 5 – Event Detail View showing Member RSVP Card and Officer Attendee Roster (/events/<id>/)]
+
+3. Remaining Tasks
+| No. | Task                                 | Description                                                                                                    | Priority | Target Increment      |
+| 1   | Attendance Roster Export (PDF & CSV) | Generate downloadable attendance reports and CSV rosters for school submission and organizational compliance.  | High     | Project Development 3 |
+| 2   | QR Code Check-in Scanner             | Implement personal QR attendance passes for members and a camera scanner for officers during live events.      | Medium   | Project Development 3 |
+| 3   | Automated Event Reminders            | Configure automated email notifications dispatched 24 hours prior to scheduled events to confirmed attendees.  | Low      | Project Development 3 |
+
+4. Outstanding Issues
+| Issue ID | Description                                        | Steps to Reproduce                                                | Severity | Status / Workaround                                                                                |
+| ISS-01   | Port 8000 unavailable due to local httpd service   | 1. Run python manage.py runserver without port argument.           | Minor    | Resolved: Run development server specifying port 8080 (python manage.py runserver 8080).          |
+
+5. Test Accounts
+| Role             | Username / Email                     | Password     |
+| Officer (Admin)  | officer_alex / officer@university.edu | Password123! |
+| Member (Student) | member_taylor / member@university.edu | Password123! |
+
+6. Declaration
+I declare that the work described in this report is my own, that it is accurately reflected in my GitHub repository, and that all remaining tasks and known issues are disclosed above.
+Name: Christian Jay Peña
+Date: 11/23/2026
