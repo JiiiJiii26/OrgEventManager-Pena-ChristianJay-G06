@@ -109,43 +109,29 @@ def officer_dashboard_view(request):
     """
     Officer (Admin) Dashboard:
     Provides navigation for creating events, tracking attendance, and exporting reports.
+    Queries real events authored by the officer.
     """
+    from django.utils import timezone
+    from events.models import Event
+
+    if request.user.is_superuser:
+        events = Event.objects.all().order_by('-date_time')
+    else:
+        events = Event.objects.filter(created_by=request.user).order_by('-date_time')
+
+    total_events = events.count()
+    upcoming_count = events.filter(date_time__gte=timezone.now()).count()
+    total_capacity = sum(e.capacity for e in events)
+
     context = {
         'page_title': 'Officer Dashboard',
         'active_tab': 'officer_dashboard',
-        # Phase 1 placeholder statistics & activity
         'stats': {
-            'total_events': 3,
-            'upcoming_events': 2,
-            'total_attendees': 142,
-            'pending_rsvps': 28,
+            'total_events': total_events,
+            'upcoming_events': upcoming_count,
+            'total_capacity': total_capacity,
         },
-        'sample_events': [
-            {
-                'id': 1,
-                'title': 'General Assembly 2026',
-                'date': 'November 20, 2026',
-                'location': 'University Auditorium',
-                'status': 'Upcoming',
-                'rsvp_count': 84,
-            },
-            {
-                'id': 2,
-                'title': 'Tech Stack & Git Workshop',
-                'date': 'November 28, 2026',
-                'location': 'CS Lab 301',
-                'status': 'Upcoming',
-                'rsvp_count': 45,
-            },
-            {
-                'id': 3,
-                'title': 'Org Leadership Summit',
-                'date': 'October 15, 2026',
-                'location': 'Student Union Conference Room',
-                'status': 'Completed',
-                'rsvp_count': 32,
-            },
-        ]
+        'events': events[:5],
     }
     return render(request, 'accounts/officer_dashboard.html', context)
 

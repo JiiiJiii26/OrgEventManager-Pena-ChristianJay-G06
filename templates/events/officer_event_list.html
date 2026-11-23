@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Events | Officer{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+  <div>
+    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.35rem;">
+      <h1 class="dashboard-title">Officer Event Management</h1>
+      <span class="badge badge-officer">Author / Admin View</span>
+    </div>
+    <p class="dashboard-subtitle">
+      Create, update, or remove campus organization events and review attendance participation.
+    </p>
+  </div>
+  <div>
+    <a href="{% url 'events:event_create' %}" class="btn btn-primary">
+      <svg style="width: 18px; height: 18px; fill: currentColor;" viewBox="0 0 24 24">
+        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+      </svg>
+      Create New Event
+    </a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">All Events Authored by You</h2>
+    <span class="badge badge-info">{{ events.count }} Total Event{{ events.count|pluralize }}</span>
+  </div>
+
+  <div class="card-body" style="padding: 0;">
+    {% if events %}
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Event Title</th>
+              <th>Date &amp; Time</th>
+              <th>Venue</th>
+              <th>Capacity</th>
+              <th>Status</th>
+              <th style="text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for event in events %}
+              <tr>
+                <td>
+                  <strong>{{ event.title }}</strong>
+                </td>
+                <td>{{ event.date_time|date:"M d, Y - h:i A" }}</td>
+                <td>{{ event.venue }}</td>
+                <td>{{ event.capacity }} slots</td>
+                <td>
+                  {% if event.is_past %}
+                    <span class="badge" style="background-color: #f1f5f9; color: #64748b;">Completed</span>
+                  {% else %}
+                    <span class="badge badge-success">Upcoming</span>
+                  {% endif %}
+                </td>
+                <td style="text-align: right;">
+                  <a href="{% url 'events:event_update' event.pk %}" class="btn btn-outline btn-sm">Edit</a>
+                  <a href="{% url 'events:event_delete' event.pk %}" class="btn btn-secondary btn-sm" style="color: #b91c1c;">Delete</a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div style="text-align: center; padding: 3rem 1.5rem;">
+        <p style="font-size: 1.05rem; color: var(--text-muted); margin-bottom: 1rem;">
+          You haven't authored any events yet.
+        </p>
+        <a href="{% url 'events:event_create' %}" class="btn btn-primary">
+          Create Your First Event
+        </a>
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="card-footer" style="display: flex; justify-content: space-between; align-items: center;">
+    <a href="{% url 'accounts:officer_dashboard' %}" class="btn btn-outline btn-sm">
+      &larr; Back to Officer Dashboard
+    </a>
+  </div>
+</div>
+{% endblock %}
