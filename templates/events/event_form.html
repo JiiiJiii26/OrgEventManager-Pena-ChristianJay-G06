@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="auth-container" style="max-width: 680px;">
+  <div class="card">
+    <div class="card-header">
+      <div style="display: flex; align-items: center; gap: 0.6rem;">
+        <h2 class="card-title">{{ page_title }}</h2>
+      </div>
+      <span class="badge badge-officer">Officer Tool</span>
+    </div>
+
+    <div class="card-body">
+      <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem;">
+        {% if is_update %}
+          Update the event parameters below. All registered attendees will see these changes.
+        {% else %}
+          Schedule and announce a new student organization event. Fill in all required event details.
+        {% endif %}
+      </p>
+
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger" style="margin-bottom: 1.25rem;">
+          <div>
+            {% for error in form.non_field_errors %}
+              <div>{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+      <form method="POST" novalidate>
+        {% csrf_token %}
+
+        <!-- Event Title -->
+        <div class="form-group">
+          <label for="{{ form.title.id_for_label }}" class="form-label">
+            Event Title <span style="color: #b91c1c;">*</span>
+          </label>
+          {{ form.title }}
+          {% if form.title.errors %}
+            {% for error in form.title.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          {% endif %}
+        </div>
+
+        <!-- Description -->
+        <div class="form-group">
+          <label for="{{ form.description.id_for_label }}" class="form-label">
+            Description &amp; Agenda
+          </label>
+          {{ form.description }}
+          {% if form.description.errors %}
+            {% for error in form.description.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          {% endif %}
+        </div>
+
+        <!-- Date and Time -->
+        <div class="form-group">
+          <label for="{{ form.date_time.id_for_label }}" class="form-label">
+            Scheduled Date &amp; Time <span style="color: #b91c1c;">*</span>
+          </label>
+          {{ form.date_time }}
+          <div class="form-text">Must be scheduled for a future date/time.</div>
+          {% if form.date_time.errors %}
+            {% for error in form.date_time.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          {% endif %}
+        </div>
+
+        <!-- Venue / Location -->
+        <div class="form-group">
+          <label for="{{ form.venue.id_for_label }}" class="form-label">
+            Venue / Location <span style="color: #b91c1c;">*</span>
+          </label>
+          {{ form.venue }}
+          {% if form.venue.errors %}
+            {% for error in form.venue.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          {% endif %}
+        </div>
+
+        <!-- Capacity -->
+        <div class="form-group">
+          <label for="{{ form.capacity.id_for_label }}" class="form-label">
+            Attendee Capacity <span style="color: #b91c1c;">*</span>
+          </label>
+          {{ form.capacity }}
+          <div class="form-text">Maximum number of confirmed RSVP slots available.</div>
+          {% if form.capacity.errors %}
+            {% for error in form.capacity.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          {% endif %}
+        </div>
+
+        <div style="margin-top: 2rem; display: flex; gap: 1rem; align-items: center;">
+          <button type="submit" class="btn btn-primary">
+            {% if is_update %}Save Changes{% else %}Publish Event{% endif %}
+          </button>
+          <a href="{% url 'accounts:officer_dashboard' %}" class="btn btn-secondary">
+            Cancel
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
